@@ -62,19 +62,19 @@ interface
     pure subroutine dsfmt_fill_array_close_open(dSFMT_state, array, array_size) bind(c, name='dsfmt_fill_array_close_open')
         import :: c_ptr, c_double, c_int32_t
         type(c_ptr), value, intent(in) :: dSFMT_state
-        real(c_double), intent(in) :: array(*)
+        real(c_double), intent(out) :: array(*)
         integer(c_int32_t), value, intent(in) :: array_size
     end subroutine dsfmt_fill_array_close_open
     pure subroutine dsfmt_fill_array_open_close(dSFMT_state, array, array_size) bind(c, name='dsfmt_fill_array_open_close')
         import :: c_ptr, c_double, c_int32_t
         type(c_ptr), value, intent(in) :: dSFMT_state
-        real(c_double), intent(in) :: array(*)
+        real(c_double), intent(out) :: array(*)
         integer(c_int32_t), value, intent(in) :: array_size
     end subroutine dsfmt_fill_array_open_close
     pure subroutine dsfmt_fill_array_open_open(dSFMT_state, array, array_size) bind(c, name='dsfmt_fill_array_open_open')
         import :: c_ptr, c_double, c_int32_t
         type(c_ptr), value, intent(in) :: dSFMT_state
-        real(c_double), intent(in) :: array(*)
+        real(c_double), intent(out) :: array(*)
         integer(c_int32_t), value, intent(in) :: array_size
     end subroutine dsfmt_fill_array_open_open
 end interface
