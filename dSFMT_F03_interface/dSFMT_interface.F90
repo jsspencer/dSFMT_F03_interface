@@ -117,7 +117,8 @@ contains
         !    seed: seed for the RNG.
         !    rng_store_size: number of random numbers to store at once.
         ! Out:
-        !    rng: dSFMT_t with set of random numbers stored.
+        !    rng: dSFMT_t with internal variables initialised and associated
+        !       with an initialised psuedo-random number stream.
 
         integer, intent(in) :: seed, rng_store_size
         type(dSFMT_t), intent(inout) :: rng
@@ -148,6 +149,10 @@ contains
 
         ! Deallocate and reset a dSFMT_t variable safely.
 
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is closed on output and memory
+        !       associated with it is deallocated.
+
         type(dSFMT_t), intent(inout) :: rng
 
         ! Destroy dSFMT state
@@ -164,6 +169,9 @@ contains
 
         ! Reset the dSFMT state such that the next get_rand_xxx call requires
         ! the store of random numbers to be refilled.
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The internal store of random numbers is cleared.
 
         type(dSFMT_t), intent(inout) :: rng
 
@@ -227,10 +235,10 @@ contains
 
 !--- Get a random number ---
 
-! WARNING: these calls use an internal store.  Calls to different functions
-! with the same state must be separated either by a call to dSFMT_reset or
-! a call to dSFMT_end followed by reinitialisation of the dSFMT_t state using
-! dSFMT_init.
+! WARNING: these calls use a store internal to the dSFMT_t variable.  Calls to
+! different functions with the same state must be separated either by a call to
+! dSFMT_reset or a call to dSFMT_end followed by reinitialisation of the dSFMT_t
+! state using dSFMT_init.
 
     function get_rand_close_open(rng) result(r)
 
