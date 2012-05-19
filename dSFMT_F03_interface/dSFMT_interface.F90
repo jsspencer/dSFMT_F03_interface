@@ -168,6 +168,7 @@ contains
         type(dSFMT_t), intent(inout) :: rng
 
         rng%next_element = rng%random_store_size + 1
+        rng%random_store = huge(1.0_dp)
 
     end subroutine dSFMT_reset
 
