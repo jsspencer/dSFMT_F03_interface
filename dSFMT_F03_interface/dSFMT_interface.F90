@@ -39,6 +39,12 @@ module dSFMT_interface
 use, intrinsic :: iso_c_binding
 implicit none
 
+private
+public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
+          fill_array_close_open, fill_array_open_close, &
+          fill_array_open_open, get_rand_close_open,    &
+          get_rand_open_close, get_rand_open_open
+
 ! Expose functions from C as needed.
 ! See dSFMT documentation for details.
 interface
