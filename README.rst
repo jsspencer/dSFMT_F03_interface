@@ -43,5 +43,11 @@ a library.  The following files are required::
     dSFMT_F03_interface/dSFMT_utils.c
     dSFMT_F03_interface/LICENSE.txt
 
-IMPORTANT: to obtain the best performance it is vital to define the HAVE_SSE2
-C pre-processing macro on processors which have SSE2 instructions.
+.. IMPORTANT::
+
+    To obtain the best performance it is vital to define the HAVE_SSE2
+    C pre-processing macro on processors which have SSE2 instructions.
+
+    Substantial (ie 25%) speedups can be achieved with some compilers by using
+    interprocedural optimization (i.e. -ipo for Intel compilers and -flto for
+    GCC compilers).
