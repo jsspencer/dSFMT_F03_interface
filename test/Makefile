@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 
-VPATH = ../dSFMT-src-2.1:../dSFMT_F03_interface
-CPATH = ../dSFMT-src-2.1
+VPATH = ../dSFMT-src-2.2:../dSFMT_F03_interface
+CPATH = ../dSFMT-src-2.2
 
 CC = gcc
 CFLAGS = -O3 -I $(CPATH)
