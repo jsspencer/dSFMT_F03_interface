@@ -22,8 +22,11 @@ module dSFMT_interface
 !   i)   call dSFMT_init.
 !   ii)  access desired number of random numbers either by calling
 !        a get_rand_xxx function the required number of times or by filling up
-!        user-defined arrays with a dsfmt_fill_array_xxx subroutine.
+!        user-defined arrays with a fill_array_xxx subroutine.
 !   iii) call dSFMT_end to free all memory.
+
+! Note that an array must have at least a minimum number of elements (as given
+! in dsfmt_get_min_array_size).
 
 ! IMPORTANT: see the warning below about calling multiple get_rand_xxx
 ! functions.
@@ -43,7 +46,8 @@ private
 public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
           fill_array_close_open, fill_array_open_close, &
           fill_array_open_open, get_rand_close_open,    &
-          get_rand_open_close, get_rand_open_open
+          get_rand_open_close, get_rand_open_open,      &
+          dsfmt_get_min_array_size
 
 ! Expose functions from C as needed.
 ! See dSFMT documentation for details.
@@ -52,6 +56,7 @@ interface
         import :: c_int32_t
         integer(c_int32_t) :: min_size
     end function dsfmt_get_min_array_size
+
     pure function malloc_dsfmt_t() result(dsfmt_state) bind(c, name='malloc_dsfmt_t')
         import :: c_ptr
         type(c_ptr) :: dsfmt_state
@@ -60,11 +65,13 @@ interface
         import :: c_ptr
         type(c_ptr), value, intent(in) :: dsfmt_state
     end subroutine free_dsfmt_t
+
     pure subroutine dsfmt_chk_init_gen_rand(dsfmt_state, seed, mexp) bind(c, name='dsfmt_chk_init_gen_rand')
         import :: c_ptr, c_int32_t
         type(c_ptr), value, intent(in) :: dsfmt_state
         integer(c_int32_t), value, intent(in) :: seed, mexp
     end subroutine dsfmt_chk_init_gen_rand
+
     pure subroutine dsfmt_fill_array_close_open(dSFMT_state, array, array_size) bind(c, name='dsfmt_fill_array_close_open')
         import :: c_ptr, c_double, c_int32_t
         type(c_ptr), value, intent(in) :: dSFMT_state
@@ -91,8 +98,7 @@ type dSFMT_t
     type(c_ptr) :: dSFMT_state
     ! Testing indicates that 50000 is a very good size for the array storing the
     ! random numbers.  Testing was done standalone, so undoubtedly influenced by
-    ! cache size and this might be different for real-world applications, but it's easy to
-    ! change to allocatable later on.
+    ! cache size and this might be different for real-world applications.
     integer(c_int) :: random_store_size
     ! Seed passed to dSFMT.
     integer :: seed
@@ -116,6 +122,8 @@ contains
         ! In:
         !    seed: seed for the RNG.
         !    rng_store_size: number of random numbers to store at once.
+        !       dsfmt_get_min_array_size() is used if
+        !       rng_store_size < dsfmt_get_min_array_size().
         ! Out:
         !    rng: dSFMT_t with internal variables initialised and associated
         !       with an initialised psuedo-random number stream.
@@ -308,5 +316,27 @@ contains
         rng%next_element = rng%next_element + 1 
 
     end function get_rand_open_open
+
+    pure subroutine get_rand_arr_close_open(rng, arr, n)
+
+        type(dSFMT_t), intent(inout) :: rng
+        real(dp), intent(out) :: arr(:)
+        integer, intent(in) :: n
+
+        integer :: navail, nleft
+
+        if (rng%next_element + n <= rng%random_store_size) then
+            arr(1:n) = rng%random_store(rng%next_element:rng%next_element+n-1)
+            rng%next_element = rng%next_element + n
+        else
+            navail = rng%random_store_size - rng%next_element + 1
+            arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
+            call dsfmt_fill_array_close_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            nleft = n - navail
+            arr(navail+1:n) = rng%random_store(1:nleft-1)
+            rng%next_element = nleft
+        end if
+
+    end subroutine get_rand_arr_close_open
 
 end module dSFMT_interface
