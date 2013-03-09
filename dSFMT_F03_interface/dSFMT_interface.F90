@@ -47,6 +47,9 @@ public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
           fill_array_close_open, fill_array_open_close, &
           fill_array_open_open, get_rand_close_open,    &
           get_rand_open_close, get_rand_open_open,      &
+          get_rand_arr_close_open,                      &
+          get_rand_arr_open_close,                      &
+          get_rand_arr_open_open,                       &
           dsfmt_get_min_array_size
 
 ! Expose functions from C as needed.
@@ -317,7 +320,31 @@ contains
 
     end function get_rand_open_open
 
+!--- Get array of random numbers from a store ---
+
+! If a small number of random numbers is repeatedly required, then filling up
+! an array at a time comes with a large function call overhead.  The following
+! routines use an internal store, similar to the get_rand_xxx functions, but
+! fill a small array in a single call.  This can be faster than repeated
+! get_rand_xxx calls as we need to only test how many elements are left in the
+! store once rather than N times.
+
+! WARNING: these calls use a store internal to the dSFMT_t variable.  Calls to
+! different functions with the same state must be separated either by a call to
+! dSFMT_reset or a call to dSFMT_end followed by reinitialisation of the dSFMT_t
+! state using dSFMT_init.
+
     pure subroutine get_rand_arr_close_open(rng, arr, n)
+
+        ! Fill an array with random numbers in interval [0,1).
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.  The store of random numbers is refilled if necessary.
+        ! Out:
+        !    arr: array of random numbers.  Must contain at least n elements.
+        ! In:
+        !    n: number of random numbers to return in arr.
 
         type(dSFMT_t), intent(inout) :: rng
         real(dp), intent(out) :: arr(:)
@@ -338,5 +365,69 @@ contains
         end if
 
     end subroutine get_rand_arr_close_open
+
+    pure subroutine get_rand_arr_open_close(rng, arr, n)
+
+        ! Fill an array with random numbers in interval (0,1].
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.  The store of random numbers is refilled if necessary.
+        ! Out:
+        !    arr: array of random numbers.  Must contain at least n elements.
+        ! In:
+        !    n: number of random numbers to return in arr.
+
+        type(dSFMT_t), intent(inout) :: rng
+        real(dp), intent(out) :: arr(:)
+        integer, intent(in) :: n
+
+        integer :: navail, nleft
+
+        if (rng%next_element + n <= rng%random_store_size) then
+            arr(1:n) = rng%random_store(rng%next_element:rng%next_element+n-1)
+            rng%next_element = rng%next_element + n
+        else
+            navail = rng%random_store_size - rng%next_element + 1
+            arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
+            call dsfmt_fill_array_open_close(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            nleft = n - navail
+            arr(navail+1:n) = rng%random_store(1:nleft-1)
+            rng%next_element = nleft
+        end if
+
+    end subroutine get_rand_arr_open_close
+
+    pure subroutine get_rand_arr_open_open(rng, arr, n)
+
+        ! Fill an array with random numbers in interval (0,1).
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.  The store of random numbers is refilled if necessary.
+        ! Out:
+        !    arr: array of random numbers.  Must contain at least n elements.
+        ! In:
+        !    n: number of random numbers to return in arr.
+
+        type(dSFMT_t), intent(inout) :: rng
+        real(dp), intent(out) :: arr(:)
+        integer, intent(in) :: n
+
+        integer :: navail, nleft
+
+        if (rng%next_element + n <= rng%random_store_size) then
+            arr(1:n) = rng%random_store(rng%next_element:rng%next_element+n-1)
+            rng%next_element = rng%next_element + n
+        else
+            navail = rng%random_store_size - rng%next_element + 1
+            arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
+            call dsfmt_fill_array_open_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            nleft = n - navail
+            arr(navail+1:n) = rng%random_store(1:nleft-1)
+            rng%next_element = nleft
+        end if
+
+    end subroutine get_rand_arr_open_open
 
 end module dSFMT_interface
