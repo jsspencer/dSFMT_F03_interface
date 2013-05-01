@@ -44,12 +44,18 @@ implicit none
 
 private
 public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
-          fill_array_close_open, fill_array_open_close, &
-          fill_array_open_open, get_rand_close_open,    &
-          get_rand_open_close, get_rand_open_open,      &
+          fill_array_close_open, &
+          fill_array_open_close, &
+          fill_array_open_open,  &
+          fill_array_gaussian, &
+          get_rand_close_open, &
+          get_rand_open_close, &
+          get_rand_open_open,  &
+          get_rand_gaussian,   &
           get_rand_arr_close_open,                      &
           get_rand_arr_open_close,                      &
           get_rand_arr_open_open,                       &
+          get_rand_arr_gaussian,                        &
           dsfmt_get_min_array_size,                     &
           unset, close_open, open_close, open_open
 
@@ -101,6 +107,7 @@ integer, parameter :: unset = 2**0
 integer, parameter :: close_open = 2**1
 integer, parameter :: open_close = 2**2
 integer, parameter :: open_open = 2**3
+integer, parameter :: gaussian = 2**4
 
 type dSFMT_t
     private
@@ -256,6 +263,44 @@ contains
 
     end subroutine fill_array_open_open
 
+    pure subroutine fill_array_gaussian(rng, array)
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.
+        ! Out:
+        !    array: array filled with random numbers with a standard normal
+        !    (Gaussian) distribution (i.e. mean=0, variance=1).
+
+        ! NOTE: array must be at least as large as the size returned by dsfmt_get_min_array_size.
+
+        type(dSFMT_t), intent(inout) :: rng
+        real(c_double), intent(out) :: array(:)
+
+        real(dp), parameter :: pi = acos(-1.0_dp)
+        integer :: i
+        real(c_double) :: s, t
+
+        call dsfmt_fill_array_open_close(rng%dSFMT_state, array, size(array))
+
+        ! The Box-Muller transform converts a pair of random numbers, u, v,
+        ! which are uniformly distributed in (0,1] into a pair of random
+        ! numbers, y, z, which have a standard normal distribution using
+        !    y = R cos(\phi) = \sqrt(-2*ln(u)) cos(2\pi v)
+        !    z = R sin(\phi) = \sqrt(-2*ln(u)) sin(2\pi v)
+        ! See http://en.wikipedia.org/wiki/Box_Muller_transform for more
+        ! details.
+        ! This might be slower than the Marsaglia polar method but it doesn't
+        ! involve any rejections, which is convenient for us.
+        do i = 1, ubound(array, dim=1), 2
+            s = sqrt(-2*log(array(i)))
+            t = 2*pi*array(i+1)
+            array(i) = s*cos(t)
+            array(i+1) = s*sin(t)
+        end do
+
+    end subroutine fill_array_gaussian
+
 !--- Get a random number ---
 
 ! WARNING: these calls use a store internal to the dSFMT_t variable.  Calls to
@@ -334,6 +379,31 @@ contains
         rng%next_element = rng%next_element + 1 
 
     end function get_rand_open_open
+
+    function get_rand_gaussian(rng) result(r)
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.  The store of random numbers is refilled if necessary.
+
+        ! Returns:
+        !    random number with a standard normal (Gaussian) distribution (ie
+        !    mean=0 and variance=1).
+
+        real(dp) :: r
+        type(dSFMT_t), intent(inout) :: rng
+
+        if (rng%next_element == rng%random_store_size+1) then
+            ! Run out of random numbers: get more.
+            call fill_array_gaussian(rng, rng%random_store)
+            rng%next_element = 1
+            rng%distribution = gaussian
+        end if
+
+        r = rng%random_store(rng%next_element)
+        rng%next_element = rng%next_element + 1
+
+    end function get_rand_gaussian
 
 !--- Get array of random numbers from a store ---
 
@@ -447,5 +517,38 @@ contains
         end if
 
     end subroutine get_rand_arr_open_open
+
+    pure subroutine get_rand_arr_gaussian(rng, arr, n)
+
+        ! Fill an array with random numbers in interval (0,1).
+
+        ! In/Out:
+        !    rng: dSFMT_t.  The dSFMT state is updated by the request for random
+        !       numbers.  The store of random numbers is refilled if necessary.
+        ! Out:
+        !    arr: array of random numbers.  Must contain at least n elements.
+        ! In:
+        !    n: number of random numbers to return in arr.
+
+        type(dSFMT_t), intent(inout) :: rng
+        real(dp), intent(out) :: arr(:)
+        integer, intent(in) :: n
+
+        integer :: navail, nleft
+
+        if (rng%next_element + n <= rng%random_store_size) then
+            arr(1:n) = rng%random_store(rng%next_element:rng%next_element+n-1)
+            rng%next_element = rng%next_element + n
+        else
+            navail = rng%random_store_size - rng%next_element + 1
+            arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
+            call fill_array_gaussian(rng, rng%random_store)
+            rng%distribution = gaussian
+            nleft = n - navail
+            arr(navail+1:n) = rng%random_store(1:nleft-1)
+            rng%next_element = nleft
+        end if
+
+    end subroutine get_rand_arr_gaussian
 
 end module dSFMT_interface
