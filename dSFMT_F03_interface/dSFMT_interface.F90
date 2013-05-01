@@ -50,7 +50,8 @@ public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
           get_rand_arr_close_open,                      &
           get_rand_arr_open_close,                      &
           get_rand_arr_open_open,                       &
-          dsfmt_get_min_array_size
+          dsfmt_get_min_array_size,                     &
+          unset, close_open, open_close, open_open
 
 ! Expose functions from C as needed.
 ! See dSFMT documentation for details.
@@ -95,8 +96,16 @@ interface
     end subroutine dsfmt_fill_array_open_open
 end interface
 
+! distribution modes
+integer, parameter :: unset = 2**0
+integer, parameter :: close_open = 2**1
+integer, parameter :: open_close = 2**2
+integer, parameter :: open_open = 2**3
+
 type dSFMT_t
     private
+    ! Type of distribution in the random store
+    integer, public :: distribution
     ! Pointer to the dsfmt_t internal state (as defined in dSFMT.h).
     type(c_ptr) :: dSFMT_state
     ! Testing indicates that 50000 is a very good size for the array storing the
@@ -145,6 +154,8 @@ contains
         ! Set current element to be larger than the store, so it is
         ! filled in the first call to the get_* functions.
         rng%next_element = rng%random_store_size + 1
+        ! But the store has not yet been filled.
+        rng%distribution = unset
 
         rng%seed = int(seed, c_int32_t)
 
@@ -188,6 +199,7 @@ contains
 
         rng%next_element = rng%random_store_size + 1
         rng%random_store = huge(1.0_dp)
+        rng%distribution = unset
 
     end subroutine dSFMT_reset
 
@@ -267,6 +279,7 @@ contains
             ! Run out of random numbers: get more.
             call dsfmt_fill_array_close_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%next_element = 1
+            rng%distribution = close_open
         end if
 
         r = rng%random_store(rng%next_element)
@@ -290,6 +303,7 @@ contains
             ! Run out of random numbers: get more.
             call dsfmt_fill_array_open_close(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%next_element = 1
+            rng%distribution = open_close
         end if
 
         r = rng%random_store(rng%next_element)
@@ -313,6 +327,7 @@ contains
             ! Run out of random numbers: get more.
             call dsfmt_fill_array_open_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%next_element = 1
+            rng%distribution = open_open
         end if
 
         r = rng%random_store(rng%next_element)
@@ -359,6 +374,7 @@ contains
             navail = rng%random_store_size - rng%next_element + 1
             arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
             call dsfmt_fill_array_close_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            rng%distribution = close_open
             nleft = n - navail
             arr(navail+1:n) = rng%random_store(1:nleft-1)
             rng%next_element = nleft
@@ -391,6 +407,7 @@ contains
             navail = rng%random_store_size - rng%next_element + 1
             arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
             call dsfmt_fill_array_open_close(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            rng%distribution = open_close
             nleft = n - navail
             arr(navail+1:n) = rng%random_store(1:nleft-1)
             rng%next_element = nleft
@@ -423,6 +440,7 @@ contains
             navail = rng%random_store_size - rng%next_element + 1
             arr(1:navail) = rng%random_store(rng%next_element:rng%random_store_size)
             call dsfmt_fill_array_open_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
+            rng%distribution = open_open
             nleft = n - navail
             arr(navail+1:n) = rng%random_store(1:nleft-1)
             rng%next_element = nleft
