@@ -446,8 +446,8 @@ contains
             call dsfmt_fill_array_close_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%distribution = close_open
             nleft = n - navail
-            arr(navail+1:n) = rng%random_store(1:nleft-1)
-            rng%next_element = nleft
+            arr(navail+1:n) = rng%random_store(1:nleft)
+            rng%next_element = nleft + 1
         end if
 
     end subroutine get_rand_arr_close_open
@@ -479,8 +479,8 @@ contains
             call dsfmt_fill_array_open_close(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%distribution = open_close
             nleft = n - navail
-            arr(navail+1:n) = rng%random_store(1:nleft-1)
-            rng%next_element = nleft
+            arr(navail+1:n) = rng%random_store(1:nleft)
+            rng%next_element = nleft + 1
         end if
 
     end subroutine get_rand_arr_open_close
@@ -512,8 +512,8 @@ contains
             call dsfmt_fill_array_open_open(rng%dSFMT_state, rng%random_store, rng%random_store_size)
             rng%distribution = open_open
             nleft = n - navail
-            arr(navail+1:n) = rng%random_store(1:nleft-1)
-            rng%next_element = nleft
+            arr(navail+1:n) = rng%random_store(1:nleft)
+            rng%next_element = nleft + 1
         end if
 
     end subroutine get_rand_arr_open_open
@@ -545,8 +545,8 @@ contains
             call fill_array_gaussian(rng, rng%random_store)
             rng%distribution = gaussian
             nleft = n - navail
-            arr(navail+1:n) = rng%random_store(1:nleft-1)
-            rng%next_element = nleft
+            arr(navail+1:n) = rng%random_store(1:nleft)
+            rng%next_element = nleft + 1
         end if
 
     end subroutine get_rand_arr_gaussian
