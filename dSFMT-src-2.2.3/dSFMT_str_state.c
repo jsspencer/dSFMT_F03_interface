@@ -7,6 +7,9 @@
  * Copyright (C) 2010 Andrea C G Mennucci
  *
  * The new BSD License is applied to this software, see LICENSE.txt
+ *
+ * Changes:
+ *  James Spencer - define equivalent function to strdup for portability
  */
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +18,18 @@
 
 #include "dSFMT-params.h"
 #include "dSFMT.h"
+
+/**
+ * This function returns a pointer to a new string which is a duplicate of string s.
+ * See strdup(3) manpage.
+ */
+char *local_strdup(const char *s) {
+    char *p = malloc(strlen(s) + 1);
+    if (p) {
+        strcpy(p, s);
+    }
+    return p;
+}
 
 /**
  * This function returns a string that represents the state of the dSFMT.
@@ -62,9 +77,9 @@ char *dsfmt_strlist_to_state(dsfmt_t *dsfmt, char **strlist, char *prefix)
   while(strlist[num_lines]!=NULL && num_lines < (DSFMT_N+6))
     num_lines++;
   if(num_lines<=0)
-    return strdup("dsfmt_strlist_to_state: the list of strings is empty\n");
+    return local_strdup("dsfmt_strlist_to_state: the list of strings is empty\n");
   if(num_lines!= (DSFMT_N+3))
-    return strdup("dsfmt_strlist_to_state: the list of strings has wrong length\n");
+    return local_strdup("dsfmt_strlist_to_state: the list of strings has wrong length\n");
 
   str=strlist[0];
   if(strcmp(str+pl+3,dsfmt_get_idstring())) {
@@ -113,15 +128,15 @@ char *dsfmt_str_to_state(dsfmt_t *dsfmt, char *origstr, char *prefix)
     prefix="dsfmt_";
   const int pl=strlen(prefix), sl=strlen(origstr);
   if(sl<=0)
-    return strdup("dsfmt_str_to_state: the string is empty\n");
-  char *str=strdup(origstr);
+    return local_strdup("dsfmt_str_to_state: the string is empty\n");
+  char *str=local_strdup(origstr);
   char **strlist=calloc(4+DSFMT_N,sizeof(char *));
   char *p=strchr(str,'\n');
   char *op=str;
   if(p==NULL) {
       free(str);
       free(strlist);
-      return strdup("dsfmt_str_to_state: the string is garbage\n");
+      return local_strdup("dsfmt_str_to_state: the string is garbage\n");
   }
   *p=0; p++;
 
@@ -140,7 +155,7 @@ char *dsfmt_str_to_state(dsfmt_t *dsfmt, char *origstr, char *prefix)
       if(p==NULL)  {
 	free(str);
 	free(strlist);
-	return strdup("dsfmt_str_to_state: the string is truncated\n");
+	return local_strdup("dsfmt_str_to_state: the string is truncated\n");
       }
       *p=0; p++;
     } else break;
@@ -181,7 +196,7 @@ char *dsfmt_file_to_state(dsfmt_t *dsfmt, FILE *origfile, char *prefix)
     prefix="dsfmt_";
   const int pl=strlen(prefix);
   if(feof(origfile))
-    return strdup("dsfmt_file_to_state: the file is empty\n");
+    return local_strdup("dsfmt_file_to_state: the file is empty\n");
   const int sl=pl+108;
   char **strlist=calloc(4+DSFMT_N,sizeof(char *));
   for(i=0;(i<=(2+DSFMT_N)); i++) { 
@@ -190,7 +205,7 @@ char *dsfmt_file_to_state(dsfmt_t *dsfmt, FILE *origfile, char *prefix)
     if(!S) {
       for(;i>=0;i--) free(strlist[i]);
       free(strlist);
-      return strdup("dsfmt_file_to_state: the file is too short\n");
+      return local_strdup("dsfmt_file_to_state: the file is too short\n");
     }
     if(strncmp(strlist[i],prefix,pl)) {
       char *s=malloc(pl+sl+110);

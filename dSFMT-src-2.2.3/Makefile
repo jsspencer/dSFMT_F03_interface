@@ -27,7 +27,7 @@ OPTI = -O3 -finline-functions -fomit-frame-pointer -DNDEBUG \
 #STD =
 #STD = -std=c89 -pedantic
 #STD = -std=c99 -pedantic
-STD = -std=gnu99
+STD = -std=c99
 CC = gcc
 CCFLAGS = $(OPTI) $(WARN) $(STD)
 ALTIFLAGS = -mabi=altivec -maltivec -DHAVE_ALTIVEC
