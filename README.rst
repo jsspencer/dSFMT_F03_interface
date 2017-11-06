@@ -13,9 +13,11 @@ license.  See LICENSE.txt in the source subdirectories for more details.
 Directory contents
 ------------------
 
-dSFMT-src-2.2/
-    Original dSFMT (v2.2) implementation in C; taken from
+dSFMT-src-2.2.3/
+    Original dSFMT (v2.2.3) implementation in C; taken from
     http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/.
+    Also contains functions to convert the dSFMT state to/from strings by Andrea Mennucci
+    (see http://mennucc1.debian.net/dSFMT_src_state/)
 dSFMT_F03_interface/
     Fortran 2003 interface (with help of a small amount of C code for memory
     allocation and deallocation). 
@@ -26,7 +28,7 @@ test/
 Documentation
 -------------
 
-Please see the dSFMT documentation (dSFMT-src-2.2/html) and comments in the
+Please see the dSFMT documentation (dSFMT-src-2.2.3/html) and comments in the
 dSFMT_interface module.
 
 Compilation
@@ -36,9 +38,9 @@ I recommend simply copying the relevant files to a subdirectory and directly
 compiling them as part of a larger project rather than compiling and linking to
 a library.  The following files are required::
 
-    dSFMT-src-2.2/dSFMT.c
-    dSFMT-src-2.2/dSFMT*.h
-    dSFMT-src-2.2/LICENSE.txt
+    dSFMT-src-2.2.3/dSFMT.c
+    dSFMT-src-2.2.3/dSFMT*.h
+    dSFMT-src-2.2.3/LICENSE.txt
     dSFMT_F03_interface/dSFMT_interface.F90
     dSFMT_F03_interface/dSFMT_utils.c
     dSFMT_F03_interface/LICENSE.txt
