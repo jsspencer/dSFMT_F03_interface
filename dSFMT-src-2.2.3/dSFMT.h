@@ -633,4 +633,46 @@ inline static void fill_array_close1_open2(double array[], int size) {
 }
 #endif
 
+/******* string<->state converters **/
+
+/**
+ * This function returns a string that represents the state of the dSFMT.
+ * The string is allocated and should be free-d after use.
+ *
+ * @param dsfmt dsfmt state vector.
+ * @param prefix a prefix to start all lines; if it is NULL, it is set to "dsfmt_"
+ */
+char *dsfmt_state_to_str(dsfmt_t *dsfmt, char *prefix);
+
+
+/**
+ * This function reads a NULL terminated list of string that represents the state of the dSFMT, and fills the state.
+ * It returns NULL if OK, or a string explaining the error, if any. (The error should be freed after use)
+ *
+ * @param dsfmt dsfmt state vector to be filled.
+ * @param strlist the NULL terminated list of strings encoding the state
+ * @param prefix the prefix that starts all lines; if it is NULL, it is set to "dsfmt_"
+ */
+char *dsfmt_strlist_to_state(dsfmt_t *dsfmt, char **strlist, char *prefix);
+
+/**
+ * This function reads a string that represents the state of the dSFMT, and fills the state.
+ * It returns NULL if OK, or a string explaining the error, if any. (It should be freed after use)
+ *
+ * @param dsfmt dsfmt state vector.
+ * @param str the string encoding the state
+ * @param prefix the prefix that starts all lines; if it is NULL, it is set to "dsfmt_"
+ */
+char *dsfmt_str_to_state(dsfmt_t *dsfmt, char *str, char *prefix);
+
+/**
+ * This function reads a file descriptor that represents the state of the dSFMT, and fills the state.
+ * It returns NULL if OK, or a string explaining the error, if any. (It should be freed after use)
+ *
+ * @param dsfmt dsfmt state vector.
+ * @param origfile the file encoding the state
+ * @param prefix the prefix that starts all lines; if it is NULL, it is set to "dsfmt_"
+ */
+char *dsfmt_file_to_state(dsfmt_t *dsfmt, FILE *origfile, char *prefix);
+
 #endif /* DSFMT_H */

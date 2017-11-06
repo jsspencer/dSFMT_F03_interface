@@ -27,7 +27,7 @@ OPTI = -O3 -finline-functions -fomit-frame-pointer -DNDEBUG \
 #STD =
 #STD = -std=c89 -pedantic
 #STD = -std=c99 -pedantic
-STD = -std=c99
+STD = -std=gnu99
 CC = gcc
 CCFLAGS = $(OPTI) $(WARN) $(STD)
 ALTIFLAGS = -mabi=altivec -maltivec -DHAVE_ALTIVEC
@@ -38,6 +38,7 @@ STD_TARGET = test-std-M19937
 ALL_STD_TARGET = test-std-M521 test-std-M1279 test-std-M2203 test-std-M4253 \
 test-std-M11213 test-std-M19937 test-std-M44497 test-std-M86243 \
 test-std-M132049 test-std-M216091
+STD_SRC_STATE = test-std-str-state-M4253 test-std-str-state-M19937
 ALTI_TARGET = $(STD_TARGET) test-alti-M19937
 ALL_ALTI_TARGET = test-alti-M521 test-alti-M1279 test-alti-M2203 \
 test-alti-M4253 test-alti-M11213 test-alti-M19937 test-alti-M44497 \
@@ -46,6 +47,7 @@ SSE2_TARGET = $(STD_TARGET) test-sse2-M19937
 ALL_SSE2_TARGET = test-sse2-M521 test-sse2-M1279 test-sse2-M2203 \
 test-sse2-M4253 test-sse2-M11213 test-sse2-M19937 test-sse2-M44497 \
 test-sse2-M86243 test-sse2-M132049 test-sse2-M216091
+SSE2_SRC_STATE = test-sse2-str-state-M4253 test-sse2-str-state-M19937
 # ==========================================================
 # comment out or EDIT following lines to get max performance
 # ==========================================================
@@ -89,11 +91,15 @@ alti: $(ALTI_TARGET)
 osx-alti:
 	$(MAKE) "ALTIFLAGS=$(OSXALTIFLAGS)" alti
 
-std-check: $(ALL_STD_TARGET)
+std-check: $(ALL_STD_TARGET) ${STD_SRC_STATE}
 	./check.sh test-std
+	./test-std-str-state-M4253
+	./test-std-str-state-M19937
 
-sse2-check: $(ALL_SSE2_TARGET)
+sse2-check: $(ALL_SSE2_TARGET) ${SSE2_SRC_STATE}
 	./check.sh test-sse2
+	./test-sse2-str-state-M4253
+	./test-sse2-str-state-M19937
 
 alti-check: $(ALL_ALTI_TARGET)
 	./check.sh test-alti
@@ -190,6 +196,21 @@ test-alti-M216091: test.c dSFMT.c dSFMT.h
 
 test-sse2-M216091: test.c dSFMT.c dSFMT.h
 	$(CC) $(CCFLAGS) $(SSE2FLAGS) -DDSFMT_MEXP=216091 -o $@ dSFMT.c test.c
+
+
+test-std-str-state-M4253: dSFMT.c dSFMT_str_state.c test_str_state.c dSFMT.h
+	${CC} ${CCFLAGS} -DDSFMT_MEXP=4253 -o $@ dSFMT.c dSFMT_str_state.c test_str_state.c
+
+test-std-str-state-M19937: dSFMT.c dSFMT_str_state.c test_str_state.c dSFMT.h
+	${CC} ${CCFLAGS} -DDSFMT_MEXP=19937 -o $@ dSFMT.c dSFMT_str_state.c test_str_state.c
+
+test-sse2-str-state-M4253: dSFMT.c dSFMT_str_state.c test_str_state.c dSFMT.h
+	${CC} ${CCFLAGS} ${SSE2FLAGS} -DDSFMT_MEXP=4253 -o $@ dSFMT.c dSFMT_str_state.c test_str_state.c
+
+test-sse2-str-state-M19937: dSFMT.c dSFMT_str_state.c test_str_state.c dSFMT.h
+	${CC} ${CCFLAGS} ${SSE2FLAGS} -DDSFMT_MEXP=19937 -o $@ dSFMT.c dSFMT_str_state.c test_str_state.c
+
+
 
 .c.o:
 	$(CC) $(CCFLAGS) -c $<

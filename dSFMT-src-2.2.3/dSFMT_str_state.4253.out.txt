@@ -1,0 +1,46 @@
+## this file encodes a dSFMT state, and is used in the tests
+# test-sse2-str-state-M4253 and test-std-str-state-M4253
+dsfmt_id=dSFMT2-4253:19-19:7b7fffef5feff-ffdffeffefbfc
+dsfmt_idx=80
+		### comments can be interspersed
+dsfmt_state[000]=0x1.3b6279ae6e215p+0 0x1.75e1227281548p+0
+dsfmt_state[001]=0x1.5628efde57369p+0 0x1.64ae7d7cfc11p+0
+dsfmt_state[002]=0x1.ff057aac07cb2p+0 0x1.0873263b4c7c8p+0
+dsfmt_state[003]=0x1.980f3bd486293p+0 0x1.098fec6d579eep+0
+dsfmt_state[004]=0x1.63c5d74c3b492p+0 0x1.f21e574b52e7cp+0
+dsfmt_state[005]=0x1.83377de80b7fdp+0 0x1.6f69516e18b17p+0
+dsfmt_state[006]=0x1.9f7b11aea1896p+0 0x1.c46a037786d55p+0
+dsfmt_state[007]=0x1.f7002d8f2ff4fp+0 0x1.c0f31be40a3b6p+0
+dsfmt_state[008]=0x1.bb973e9b984fcp+0 0x1.9e4339f95d2a3p+0
+dsfmt_state[009]=0x1.2b484ba1d9ce8p+0 0x1.ed8112ea7f251p+0
+dsfmt_state[010]=0x1.ecc8c10d2e5cep+0 0x1.08ff02f137285p+0
+dsfmt_state[011]=0x1.9cfd183f70b91p+0 0x1.71ed3ffbf689bp+0
+dsfmt_state[012]=0x1.2853843ed7408p+0 0x1.e0270ae3c7aep+0
+dsfmt_state[013]=0x1.b60a94f0ff2eap+0 0x1.d07fe8b11dbbcp+0
+dsfmt_state[014]=0x1.0a3c4f3120fcdp+0 0x1.a93d3b9c807e6p+0
+dsfmt_state[015]=0x1.9788e4485d39bp+0 0x1.8c3fa3439fde7p+0
+dsfmt_state[016]=0x1.3a95167ad9254p+0 0x1.655ad036ae61ep+0
+dsfmt_state[017]=0x1.37276dac42b0bp+0 0x1.490776ac675cap+0
+dsfmt_state[018]=0x1.58b0a5416bd57p+0 0x1.c6049e80295c8p+0
+dsfmt_state[019]=0x1.3097a2e62ef88p+0 0x1.d578e6076e37bp+0
+dsfmt_state[020]=0x1.b2fe918fcd946p+0 0x1.bbc33421e6743p+0
+dsfmt_state[021]=0x1.284baf1c52775p+0 0x1.7cc81b5de68d9p+0
+dsfmt_state[022]=0x1.312e3688c27a2p+0 0x1.e6b0e65d097a1p+0
+dsfmt_state[023]=0x1.a81f407789cf1p+0 0x1.5febde61f2331p+0
+dsfmt_state[024]=0x1.b31ff69ddafa8p+0 0x1.f34a3e8210e73p+0
+dsfmt_state[025]=0x1.8475c76ef347fp+0 0x1.e9837cc60cfbcp+0
+dsfmt_state[026]=0x1.214669c51ac8p+0 0x1.9c1fbba397e8cp+0
+dsfmt_state[027]=0x1.70067f232dea1p+0 0x1.516d4777baff7p+0
+dsfmt_state[028]=0x1.7411e39ab2addp+0 0x1.99b5372ddc74ep+0
+dsfmt_state[029]=0x1.34f5be3c926b3p+0 0x1.6ca36e7d2ff06p+0
+dsfmt_state[030]=0x1.e4c3efd5ef512p+0 0x1.d80cb33af4ce4p+0
+dsfmt_state[031]=0x1.49c36cf04affbp+0 0x1.c256fb95645cp+0
+dsfmt_state[032]=0x1.c77e4e81d2d58p+0 0x1.90191338d282p+0
+dsfmt_state[033]=0x1.946b1956defe3p+0 0x1.02b1187a0e75ap+0
+dsfmt_state[034]=0x1.3cee9767668e4p+0 0x1.bdf196d290ab3p+0
+dsfmt_state[035]=0x1.14d5ba778cf2ep+0 0x1.ad07388a6e7a1p+0
+dsfmt_state[036]=0x1.44e92b1770291p+0 0x1.d09f8e045218p+0
+dsfmt_state[037]=0x1.2a8cad63a7b91p+0 0x1.628c436738f09p+0
+dsfmt_state[038]=0x1.719264970a0fcp+0 0x1.1a65932379389p+0
+dsfmt_state[039]=0x1.5014f3f3ed94dp+0 0x1.98e6262c05dbfp+0
+dsfmt_state[040]=0x1.8175e9e107317p-210 0x1.367e411d61655p-295
