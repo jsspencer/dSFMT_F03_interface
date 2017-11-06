@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 
-VPATH = ../dSFMT-src-2.2:../dSFMT_F03_interface
-CPATH = ../dSFMT-src-2.2
+VPATH = ../dSFMT-src-2.2.3:../dSFMT_F03_interface
+CPATH = ../dSFMT-src-2.2.3
 
 CC = gcc
 CFLAGS = -O3 -I $(CPATH)
@@ -24,11 +24,11 @@ tests: testc.x testf.x
 	diff -w testc.out testf.out
 
 # Programs
-testc.x: dSFMT.o testc.o
-	$(CC) $^ -o $@
+testc.x: dSFMT.o dSFMT_str_state.o testc.o
+	$(CC) $(CFLAGS) $^ -o $@
 
-testf.x: dSFMT.o dSFMT_utils.o dSFMT_interface.o testf.o
-	$(FC) $^ -o $@
+testf.x: dSFMT.o dSFMT_str_state.o dSFMT_utils.o dSFMT_interface.o testf.o
+	$(FC) $(FFLAGS) $^ -o $@
 
 # Tidy
 clean:
