@@ -57,7 +57,8 @@ public :: dSFMT_t, dSFMT_init, dSFMT_end, dSFMT_reset,  &
           get_rand_arr_open_open,                       &
           get_rand_arr_gaussian,                        &
           dsfmt_get_min_array_size,                     &
-          unset, close_open, open_close, open_open
+          unset, close_open, open_close, open_open,     &
+          dsfmt_state_to_string, dsfmt_str_to_state
 
 ! Expose functions from C as needed.
 ! See dSFMT documentation for details.
@@ -100,7 +101,35 @@ interface
         real(c_double), intent(out) :: array(*)
         integer(c_int32_t), value, intent(in) :: array_size
     end subroutine dsfmt_fill_array_open_open
+
+    function dsfmt_state_to_str_c(dSFMT_state, prefix) result(rng_state) bind(c, name='dsfmt_state_to_str')
+        import :: c_ptr, c_char
+        type(c_ptr), value, intent(in) :: dSFMT_state
+        type(c_ptr), value, intent(in) :: prefix
+        type(c_ptr) :: rng_state
+    end function dsfmt_state_to_str_c
+    function dsfmt_str_to_state_c(dSFMT_state, rng_state, prefix) result(ret_str) bind(c, name='dsfmt_str_to_state')
+        import :: c_ptr, c_char
+        type(c_ptr), value, intent(in) :: dSFMT_state
+        type(c_ptr), value, intent(in) :: rng_state
+        type(c_ptr), value, intent(in) :: prefix
+        type(c_ptr) :: ret_str
+    end function dsfmt_str_to_state_c
 end interface
+
+! private C utilities
+interface
+    function strlen(ptr) bind(c)
+        import :: c_ptr, c_size_t
+        type(c_ptr), value, intent(in) :: ptr
+        integer(c_size_t) :: strlen
+    end function strlen
+    subroutine free_c(ptr) bind(c, name='free')
+        import :: c_ptr
+        type(c_ptr), value, intent(in) :: ptr
+    end subroutine free_c
+end interface
+
 
 ! distribution modes
 integer, parameter :: unset = 2**0
@@ -562,5 +591,132 @@ contains
         end if
 
     end subroutine get_rand_arr_gaussian
+
+!--- Convert dSFMT state to/from a string ---
+
+    subroutine dsfmt_state_to_string(rng, rng_state, prefix)
+
+        ! Serialise the dSFMT state to a string.
+
+        ! In:
+        !    rng: dSFMT_t state to serialise.
+        !    prefix (optional): prefix to give to each line. If not present, defaults to 'dsfmt_'.
+        ! Out:
+        !    rng_state: string holding serialised state. Must be deallocated by caller.
+
+        type(dSFMT_t), intent(in) :: rng
+        character(:), intent(out), allocatable :: rng_state
+        character(*), intent(in), optional :: prefix
+
+        character(c_char), allocatable, target :: prefix_str(:)
+        character(c_char), pointer :: state_str_c(:)
+        type(c_ptr) :: prefix_ptr, state_ptr
+
+        prefix_ptr = C_NULL_PTR
+        if (present(prefix)) then
+            call fstring_to_cstring(prefix, prefix_str)
+            prefix_ptr = c_loc(prefix_str)
+        end if
+
+        state_ptr = dsfmt_state_to_str_c(rng%dSFMT_state, prefix_ptr)
+        call c_f_pointer(state_ptr, state_str_c, [int(strlen(state_ptr))])
+        call cstring_to_fstring(state_str_c, rng_state)
+        call free_c(state_ptr)
+
+        if (present(prefix)) deallocate(prefix_str)
+
+    end subroutine dsfmt_state_to_string
+
+    subroutine dsfmt_str_to_state(rng, rng_state, prefix, err_msg)
+
+        ! Fill the dSFMT state according to a serialised state.
+
+        ! In:
+        !    rng_state: string containing serialised dSFMT state.
+        !    prefix (optional): prefix to given to each line. If not present, defaults to 'dsfmt_'.
+        !         Must match that used in dsfmt_state_to_string.
+        ! In/Out:
+        !    rng: dSFMT_t state to update.
+        ! Out:
+        !    err_msg (optional): if present and if allocated, contains the error message resulting
+        !         from a failure to update the dSFMT_t state. If not present, the error message (if any)
+        !         is printed to STDOUT. If allocated, should be deallocated by caller.
+
+        type(dSFMT_t), intent(inout) :: rng
+        character(*), intent(in) :: rng_state
+        character(*), intent(in), optional :: prefix
+        character(:), intent(out), optional, allocatable :: err_msg
+
+        character(c_char), allocatable, target :: prefix_str(:)
+        type(c_ptr) :: prefix_ptr, ret_ptr
+        character(c_char), allocatable, target :: state_str(:)
+        character(c_char), pointer :: ret_str_c(:)
+
+        prefix_ptr = C_NULL_PTR
+        if (present(prefix)) then
+            call fstring_to_cstring(prefix, prefix_str)
+            prefix_ptr = c_loc(prefix_str)
+        end if
+
+        call fstring_to_cstring(rng_state, state_str)
+        ret_ptr = dsfmt_str_to_state_c(rng%dSFMT_state, c_loc(state_str), prefix_ptr)
+        deallocate(state_str)
+
+        if (c_associated(ret_ptr)) then
+            call c_f_pointer(ret_ptr, ret_str_c, [int(strlen(ret_ptr))])
+            if (present(err_msg)) then
+                call cstring_to_fstring(ret_str_c, err_msg)
+            else
+                write (6,*) 'dsfmt_str_to_state error: ', ret_str_c
+            end if
+            call free_c(ret_ptr)
+        end if
+
+        if (present(prefix)) deallocate(prefix_str)
+
+    end subroutine dsfmt_str_to_state
+
+!--- Private string utilities ---
+
+    pure subroutine cstring_to_fstring(cstring, fstring)
+
+        ! Convert a C character array to a Fortran string.
+
+        ! In:
+        !    cstring: C-format string.
+        ! Out:
+        !    fstring: Fortran-format string. Must be deallocated by caller.
+
+        character(c_char), intent(in) :: cstring(:)
+        character(:), allocatable, intent(out) :: fstring
+        integer :: i
+
+        allocate(character(len=size(cstring)) :: fstring)
+        do i = 1, size(cstring)
+            fstring(i:i) = cstring(i)
+        end do
+
+    end subroutine cstring_to_fstring
+
+    pure subroutine fstring_to_cstring(fstring, cstring)
+
+        ! Convert a Fortran string to a C character array.
+
+        ! In:
+        !    fstring: Fortran-format string.
+        ! Out:
+        !    cstring: C-format string. Null character, '\0' is appended to the string. Must be deallocated by caller.
+
+        character(*), intent(in) :: fstring
+        character(c_char), allocatable, intent(out) :: cstring(:)
+        integer :: i
+
+        allocate(cstring(len(fstring)+1))
+        do i = 1, len(fstring)
+            cstring(i) = fstring(i:i)
+        end do
+        cstring(i) = c_null_char
+
+    end subroutine fstring_to_cstring
 
 end module dSFMT_interface
