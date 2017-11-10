@@ -202,6 +202,7 @@ contains
         deallocate(rng%random_store)
         rng%random_store_size = -1
         rng%next_element = -1
+        rng%dSFMT_state = c_null_ptr
 
     end subroutine dSFMT_end
 
