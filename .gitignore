@@ -1,0 +1,4 @@
+test/*.o
+test/*.x
+test/*.mod
+test/*.out
