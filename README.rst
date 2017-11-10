@@ -39,6 +39,7 @@ compiling them as part of a larger project rather than compiling and linking to
 a library.  The following files are required::
 
     dSFMT-src-2.2.3/dSFMT.c
+    dSFMT-src-2.2.3/dSFMT_str_state.c
     dSFMT-src-2.2.3/dSFMT*.h
     dSFMT-src-2.2.3/LICENSE.txt
     dSFMT_F03_interface/dSFMT_interface.F90
